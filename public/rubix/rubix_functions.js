@@ -6,24 +6,27 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ alpha: true });
 const geometry = new THREE.BoxGeometry();
+const boundingbox_geometry = new THREE.BoxGeometry(10,10,5);
 const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
+const opaque_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF,wireframe:true});
 const pivot = new THREE.Mesh(geometry, material);
 const cube = new THREE.Mesh(geometry, material);
+const boundingbox = new THREE.Mesh(boundingbox_geometry, opaque_material);
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let hoveredObject = null;
 
-export function setup_scene(){
+export function setup_rubix_scene(){
     // Scene setup
 
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
     camera.position.z = 10;
-    
-    scene.add(pivot);
+    boundingbox.material.wire
+    scene.add(pivot,boundingbox);
     scene.addEventListener()
     document.getElementById("scene-container").addEventListener("click", function(event) {
-        const intersects = raycaster.intersectObjects(scene.children);
+        const intersects = raycaster.intersectObjects(scene.boundingbox);
         rotate_cube(intersects);
     });
 
@@ -44,6 +47,7 @@ export function setup_scene(){
     createcubes()
 
 }
+
 function createcubes(){
 
     
@@ -52,7 +56,11 @@ function createcubes(){
     cube.position.set(2,0,0);
     
 }
+function rotate_cubes_within_bounding_box(intersects){
 
+    
+
+}
 function rotate_cube(intersects){
 
     
@@ -93,7 +101,7 @@ function paint_collided_objects(intersects){
 
 }
 // Resize Handler
-export function resizeRenderer() {
+function resizeRenderer() {
     const width = container.clientWidth;
     const height = container.clientHeight;
     renderer.setSize(width, height);
@@ -102,12 +110,12 @@ export function resizeRenderer() {
 }
 
 // Animation loop
-export function animate() {
+export function animate_rubix_scene() {
     
-    requestAnimationFrame(animate);
+    requestAnimationFrame(animate_rubix_scene);
     const intersects = raycaster.intersectObjects(scene.children);
     
-    paint_collided_objects(intersects);
+    //paint_collided_objects(intersects);
 
     renderer.render(scene, camera);
 
