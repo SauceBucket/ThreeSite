@@ -6,28 +6,35 @@ const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ alpha: true });
 const geometry = new THREE.BoxGeometry();
-const boundingbox_geometry = new THREE.BoxGeometry(10,10,5);
 const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
 const opaque_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF,wireframe:true});
 const pivot = new THREE.Mesh(geometry, material);
-const cube = new THREE.Mesh(geometry, material);
-const boundingbox = new THREE.Mesh(boundingbox_geometry, opaque_material);
+const cube1 = new THREE.Mesh(geometry, material);
+cube1.userData.type = "cube"
+const cube2 = new THREE.Mesh(geometry, material);
+cube2.userData.type = "cube"
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let hoveredObject = null;
-
+const cubecollection = [
+    cube1,
+    cube2
+]
 export function setup_rubix_scene(){
     // Scene setup
 
     renderer.setSize(container.clientWidth, container.clientHeight);
     container.appendChild(renderer.domElement);
     camera.position.z = 10;
-    boundingbox.material.wire
-    scene.add(pivot,boundingbox);
+    scene.add(pivot);
+    scene.add(...cubecollection);
     scene.addEventListener()
     document.getElementById("scene-container").addEventListener("click", function(event) {
-        const intersects = raycaster.intersectObjects(scene.boundingbox);
-        rotate_cube(intersects);
+        
+
+        const intersects = raycaster.intersectObjects(scene.children);
+        rotate_section(intersects);
+
     });
 
     document.getElementById("scene-container").addEventListener("mousemove", function(event) {
@@ -50,54 +57,55 @@ export function setup_rubix_scene(){
 
 function createcubes(){
 
-    
-    pivot.add(cube);
-    //pivot2.add(cube);
-    cube.position.set(2,0,0);
-    
+    cube1.position.set(2,0,0);
+    cube2.position.set(-2,0,0);
 }
-function rotate_cubes_within_bounding_box(intersects){
+function rotate_section(intersects){
 
-    
-
-}
-function rotate_cube(intersects){
-
-    
     if (intersects.length > 0) {
         
-        if(intersects[0].object == cube){
+        if(intersects[0].object.userData.type == "cube"){
 
-            cube.parent.rotation.z += Math.PI/2;
-            console.log('Object clicked:', cube);
+            rotate_all_cubes_sharing_z_val(intersects[0].object.position.z);
         }
             
         
     }
-}
 
-function paint_collided_objects(intersects){
-    
-    
-    if (intersects.length > 0) {
-        
-        if(hoveredObject !== intersects[0].object)
-            if(hoveredObject) {
-                hoveredObject.material.color.set(0x00FF00);
-            }
-        hoveredObject = intersects[0].object;
-        console.log('Object hovered:', hoveredObject);
-        hoveredObject.material.color.set(0xFF0000);
-        
-    }
-    else{
-        if(hoveredObject) {
-            hoveredObject.material.color.set(0x00FF00);
-            hoveredObject = null;
+}
+function rotate_all_cubes_sharing_z_val(z_val){
+
+    cubecollection.forEach(cube => {
+        if(cube.position.z == z_val){
+
+                pivot.add(cube)
+
         }
 
-    }
+    });
+    pivot.rotation.z += Math.PI/4;
+    // Ensure that the pivot and its children update their world matrices
+    pivot.updateMatrixWorld(true); // Updates the world matrix of the pivot and its children
 
+    let objects_to_remove = [...pivot.children];
+    pivot.children = [];
+    // Update the world position of the cubes
+    objects_to_remove.forEach(cube => {
+        // Update the cube's position relative to the world, considering the pivot's rotation
+        cube.updateMatrixWorld(true); // Ensure the world matrix is updated
+        let worldPosition = new THREE.Vector3();
+        cube.getWorldPosition(worldPosition); // Get the world position of the cube
+
+        // Update the cube's position directly
+        cube.position.copy(worldPosition);
+        scene.add(cube); // Add the cube back to the scene
+    });
+}
+function rotate_cube(intersects){
+
+
+    cube.parent.rotation.z += Math.PI/2;
+    console.log('Object clicked:', cube);
 
 }
 // Resize Handler
