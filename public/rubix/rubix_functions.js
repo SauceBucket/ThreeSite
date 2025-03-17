@@ -9,17 +9,15 @@ const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
 const opaque_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF,wireframe:true});
 const pivot = new THREE.Mesh(geometry, opaque_material);
-const cube1 = new THREE.Mesh(geometry, material);
-cube1.userData.type = "cube"
-const cube2 = new THREE.Mesh(geometry, material);
-cube2.userData.type = "cube"
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
 let hoveredObject = null;
-const cubecollection = [
-    cube1,
-    cube2
-]
+const x_axis = new THREE.Vector3(1,0,0);
+const y_axis = new THREE.Vector3(0,1,0);
+const z_axis = new THREE.Vector3(0,0,1);
+let axis_selected = y_axis;
+
+let cubecollection = [];
 export function setup_rubix_scene(){
     // Scene setup
 
@@ -27,12 +25,12 @@ export function setup_rubix_scene(){
     container.appendChild(renderer.domElement);
     camera.position.z = 10;
     scene.add(pivot);
-    scene.add(...cubecollection);
+    initialize_cubes()
     scene.addEventListener()
     document.getElementById("scene-container").addEventListener("click", function(event) {
         
 
-        const intersects = raycaster.intersectObjects(scene.children);
+        const intersects = raycaster.intersectObjects(cubecollection);
         rotate_section(intersects);
 
     });
@@ -45,32 +43,98 @@ export function setup_rubix_scene(){
         
         // Update the raycaster
         raycaster.setFromCamera(mouse, camera);
-
+        
     });
 
     
     window.addEventListener('resize', resizeRenderer);
     resizeRenderer();
-    createcubes()
+
 
 }
 
-function createcubes(){
+function initialize_cubes(){
+    const red_material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });   
+    const blue_material = new THREE.MeshBasicMaterial({ color: 0x0000FF });  
+    const green_material = new THREE.MeshBasicMaterial({ color: 0x00FF00 }); 
+    const orange_material = new THREE.MeshBasicMaterial({ color: 0xFFA500 }); 
+    const white_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF }); 
+    const yellow_material = new THREE.MeshBasicMaterial({ color: 0xFFFF00 }); 
 
+    const cube1 = new THREE.Mesh(geometry, red_material);
+    const cube2 = new THREE.Mesh(geometry, green_material);
+    const cube3 = new THREE.Mesh(geometry, white_material);
+    const cube4 = new THREE.Mesh(geometry, yellow_material);
+    const cube5 = new THREE.Mesh(geometry, blue_material);
+    const cube6 = new THREE.Mesh(geometry, orange_material);
+    
     cube1.position.set(2,0,0);
     cube2.position.set(-2,0,0);
+    cube3.position.set(0,2,0);
+    cube4.position.set(0,-2,0);
+    cube5.position.set(0,0,2);
+    cube6.position.set(0,0,-2);
+
+    cubecollection = [
+        cube1,
+        cube2,
+        cube3,
+        cube4,
+        cube5,
+        cube6,
+    ]
+    scene.add(...cubecollection);
 }
 function rotate_section(intersects){
 
     if (intersects.length > 0) {
-        
-        if(intersects[0].object.userData.type == "cube"){
-
-            rotate_all_cubes_sharing_z_val(intersects[0].object.position.z);
-        }
-            
-        
+        rotate_all_cubes_along_axis(axis_selected,intersects[0].object);     
     }
+
+}
+
+function rotate_all_cubes_along_axis(axis,selected_cube){
+
+    switch(axis){
+        case x_axis:
+            rotate_all_cubes_sharing_x_val(selected_cube.position.x)
+            break;
+        case y_axis:
+            rotate_all_cubes_sharing_y_val(selected_cube.position.y)
+            break;
+        case z_axis:
+            rotate_all_cubes_sharing_z_val(selected_cube.position.z)
+            break;
+        default:
+            break;
+
+    }
+
+}
+function rotate_all_cubes_sharing_x_val(x_val){
+
+    cubecollection.forEach(cube => {
+
+        if(cube.position.x == x_val){
+
+            rotate_around_point(cube,pivot.position,Math.PI/2,x_axis);
+            cube.updateMatrixWorld(true);
+        }
+
+    });
+
+}
+function rotate_all_cubes_sharing_y_val(y_val){
+
+    cubecollection.forEach(cube => {
+
+        if(cube.position.y == y_val){
+
+            rotate_around_point(cube,pivot.position,Math.PI/2,y_axis);
+            cube.updateMatrixWorld(true);
+        }
+
+    });
 
 }
 function rotate_all_cubes_sharing_z_val(z_val){
@@ -79,7 +143,7 @@ function rotate_all_cubes_sharing_z_val(z_val){
 
         if(cube.position.z == z_val){
 
-            rotate_around_point_Y(cube,new THREE.Vector3(3,0,0),Math.PI/2);
+            rotate_around_point(cube,pivot.position,Math.PI/2,z_axis);
             cube.updateMatrixWorld(true);
         }
 
@@ -100,7 +164,7 @@ function resizeRenderer() {
 export function animate_rubix_scene() {
     
     requestAnimationFrame(animate_rubix_scene);
-    const intersects = raycaster.intersectObjects(scene.children);
+    const intersects = raycaster.intersectObjects(cubecollection);
     
     //paint_collided_objects(intersects);
 
@@ -108,46 +172,34 @@ export function animate_rubix_scene() {
 
 }
 
-export function createsquare(x,y) {
-    const geometry = new THREE.BoxGeometry();
-    const material = new THREE.MeshBasicMaterial({ color: 0x44aa88 });
-    const cube2 = new THREE.Mesh(geometry, material);
-    cube2.position.set(Math.floor(Math.random() * 6),Math.floor(Math.random() * 6),Math.floor(Math.random() * 6));
-    scene.add(cube2);
-}
-
-function rotate_around_point_X(object, point, angle){
-
-    const axis = new THREE.Vector3(0,1,0);
-
-    object.position.sub(point.position);
-
-    object.position.applyAxisAngle(axis, angle);
-
-    object.position.add(point.position);
-
-}
-
-function rotate_around_point_Y(object, point, angle){
-
-    const axis = new THREE.Vector3(0,1,0);
+function rotate_around_point(object, point, angle, axis) {
 
     object.position.sub(point);
 
-    object.position.applyAxisAngle(axis, angle);
+    const quaternion = new THREE.Quaternion();
+    quaternion.setFromAxisAngle(axis, angle);
+
+    object.position.applyQuaternion(quaternion);
 
     object.position.add(point);
 
 }
 
-function rotate_around_point_Z(object, point, angle){
+export function SetRotationAxis(axis){
 
-    const axis = new THREE.Vector3(0,1,0);
+    switch(axis){
+        case 'x':
+            axis_selected = x_axis;
+            break;
+        case 'y':
+            axis_selected = y_axis;
+            break;
+        case 'z':
+            axis_selected = z_axis;
+            break;
+        default:
+            break;
 
-    object.position.sub(point.position);
-
-    object.position.applyAxisAngle(axis, angle);
-
-    object.position.add(point.position);
+    }
 
 }
