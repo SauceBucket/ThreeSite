@@ -8,7 +8,7 @@ const renderer = new THREE.WebGLRenderer({ alpha: true });
 const geometry = new THREE.BoxGeometry();
 const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
 const opaque_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF,wireframe:true});
-const pivot = new THREE.Mesh(geometry, material);
+const pivot = new THREE.Mesh(geometry, opaque_material);
 const cube1 = new THREE.Mesh(geometry, material);
 cube1.userData.type = "cube"
 const cube2 = new THREE.Mesh(geometry, material);
@@ -76,38 +76,17 @@ function rotate_section(intersects){
 function rotate_all_cubes_sharing_z_val(z_val){
 
     cubecollection.forEach(cube => {
+
         if(cube.position.z == z_val){
 
-                pivot.add(cube)
-
+            rotate_around_point_Y(cube,new THREE.Vector3(3,0,0),Math.PI/2);
+            cube.updateMatrixWorld(true);
         }
 
     });
-    pivot.rotation.z += Math.PI/4;
-    // Ensure that the pivot and its children update their world matrices
-    pivot.updateMatrixWorld(true); // Updates the world matrix of the pivot and its children
-
-    let objects_to_remove = [...pivot.children];
-    pivot.children = [];
-    // Update the world position of the cubes
-    objects_to_remove.forEach(cube => {
-        // Update the cube's position relative to the world, considering the pivot's rotation
-        cube.updateMatrixWorld(true); // Ensure the world matrix is updated
-        let worldPosition = new THREE.Vector3();
-        cube.getWorldPosition(worldPosition); // Get the world position of the cube
-
-        // Update the cube's position directly
-        cube.position.copy(worldPosition);
-        scene.add(cube); // Add the cube back to the scene
-    });
-}
-function rotate_cube(intersects){
-
-
-    cube.parent.rotation.z += Math.PI/2;
-    console.log('Object clicked:', cube);
 
 }
+
 // Resize Handler
 function resizeRenderer() {
     const width = container.clientWidth;
@@ -137,17 +116,38 @@ export function createsquare(x,y) {
     scene.add(cube2);
 }
 
-function waitforxframes(numframes){
+function rotate_around_point_X(object, point, angle){
 
-    let count = 0;
-    function loop() {
-        if (count >= frames) {
-            callback();
-        } else {
-            count++;
-            requestAnimationFrame(loop);
-        }
-    }
-    loop();
+    const axis = new THREE.Vector3(0,1,0);
+
+    object.position.sub(point.position);
+
+    object.position.applyAxisAngle(axis, angle);
+
+    object.position.add(point.position);
+
+}
+
+function rotate_around_point_Y(object, point, angle){
+
+    const axis = new THREE.Vector3(0,1,0);
+
+    object.position.sub(point);
+
+    object.position.applyAxisAngle(axis, angle);
+
+    object.position.add(point);
+
+}
+
+function rotate_around_point_Z(object, point, angle){
+
+    const axis = new THREE.Vector3(0,1,0);
+
+    object.position.sub(point.position);
+
+    object.position.applyAxisAngle(axis, angle);
+
+    object.position.add(point.position);
 
 }
