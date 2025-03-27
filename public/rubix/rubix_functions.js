@@ -15,6 +15,17 @@ let hoveredObject = null;
 const x_axis = new THREE.Vector3(1,0,0);
 const y_axis = new THREE.Vector3(0,1,0);
 const z_axis = new THREE.Vector3(0,0,1);
+
+const starting_positions = {
+    "Right Center":new THREE.Vector3(2,0,0),
+    "Up Center":new THREE.Vector3(0,2,0),
+    "Left Center":new THREE.Vector3(0,0,2),
+    "Front Center":new THREE.Vector3(-2,0,0),
+    "Down Center":new THREE.Vector3(0,-2,0),
+    "Back Center":new THREE.Vector3(0,0,-2),
+};
+
+
 let axis_selected = y_axis;
 
 let cubecollection = [];
@@ -67,13 +78,13 @@ function initialize_cubes(){
     const cube4 = new THREE.Mesh(geometry, yellow_material);
     const cube5 = new THREE.Mesh(geometry, blue_material);
     const cube6 = new THREE.Mesh(geometry, orange_material);
-    
-    cube1.position.set(2,0,0);
-    cube2.position.set(-2,0,0);
-    cube3.position.set(0,2,0);
-    cube4.position.set(0,-2,0);
-    cube5.position.set(0,0,2);
-    cube6.position.set(0,0,-2);
+
+    cube1.position.copy(starting_positions["Left Center"]);
+    cube2.position.copy(starting_positions["Right Center"]);
+    cube3.position.copy(starting_positions["Up Center"]);
+    cube4.position.copy(starting_positions["Down Center"]);
+    cube5.position.copy(starting_positions["Front Center"]);
+    cube6.position.copy(starting_positions["Back Center"]);
 
     cubecollection = [
         cube1,
