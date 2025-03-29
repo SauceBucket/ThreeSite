@@ -15,20 +15,48 @@ let hoveredObject = null;
 const x_axis = new THREE.Vector3(1,0,0);
 const y_axis = new THREE.Vector3(0,1,0);
 const z_axis = new THREE.Vector3(0,0,1);
+let axis_selected = y_axis;
+let cubecollection = [];
 
 const starting_positions = {
-    "Right Center":new THREE.Vector3(2,0,0),
-    "Up Center":new THREE.Vector3(0,2,0),
-    "Left Center":new THREE.Vector3(0,0,2),
-    "Front Center":new THREE.Vector3(-2,0,0),
-    "Down Center":new THREE.Vector3(0,-2,0),
-    "Back Center":new THREE.Vector3(0,0,-2),
+    // Face Centers
+    "Right Center": new THREE.Vector3(1.1, 0, 0),
+    "Up Center": new THREE.Vector3(0, 1.1, 0),
+    "Left Center": new THREE.Vector3(-1.1, 0, 0),
+    "Front Center": new THREE.Vector3(0, 0, 1.1),
+    "Down Center": new THREE.Vector3(0, -1.1, 0),
+    "Back Center": new THREE.Vector3(0, 0, -1.1),
+
+    // Edge Pieces
+    "Right Up": new THREE.Vector3(1.1, 1.1, 0),
+    "Right Front": new THREE.Vector3(1.1, 0, 1.1),
+    "Right Down": new THREE.Vector3(1.1, -1.1, 0),
+    "Right Back": new THREE.Vector3(1.1, 0, -1.1),
+
+    "Left Up": new THREE.Vector3(-1.1, 1.1, 0),
+    "Left Front": new THREE.Vector3(-1.1, 0, 1.1),
+    "Left Down": new THREE.Vector3(-1.1, -1.1, 0),
+    "Left Back": new THREE.Vector3(-1.1, 0, -1.1),
+
+    "Up Front": new THREE.Vector3(0, 1.1, 1.1),
+    "Up Back": new THREE.Vector3(0, 1.1, -1.1),
+    "Down Front": new THREE.Vector3(0, -1.1, 1.1),
+    "Down Back": new THREE.Vector3(0, -1.1, -1.1),
+
+    // Corner Pieces
+    "Right Up Front": new THREE.Vector3(1.1, 1.1, 1.1),
+    "Right Up Back": new THREE.Vector3(1.1, 1.1, -1.1),
+    "Right Down Front": new THREE.Vector3(1.1, -1.1, 1.1),
+    "Right Down Back": new THREE.Vector3(1.1, -1.1, -1.1),
+
+    "Left Up Front": new THREE.Vector3(-1.1, 1.1, 1.1),
+    "Left Up Back": new THREE.Vector3(-1.1, 1.1, -1.1),
+    "Left Down Front": new THREE.Vector3(-1.1, -1.1, 1.1),
+    "Left Down Back": new THREE.Vector3(-1.1, -1.1, -1.1)
 };
 
 
-let axis_selected = y_axis;
 
-let cubecollection = [];
 export function setup_rubix_scene(){
     // Scene setup
 
@@ -64,38 +92,68 @@ export function setup_rubix_scene(){
 
 }
 
-function initialize_cubes(){
-    const red_material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });   
-    const blue_material = new THREE.MeshBasicMaterial({ color: 0x0000FF });  
-    const green_material = new THREE.MeshBasicMaterial({ color: 0x00FF00 }); 
-    const orange_material = new THREE.MeshBasicMaterial({ color: 0xFFA500 }); 
-    const white_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF }); 
-    const yellow_material = new THREE.MeshBasicMaterial({ color: 0xFFFF00 }); 
+function initialize_cubes() {
+    const red_material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });   // Left
+    const blue_material = new THREE.MeshBasicMaterial({ color: 0x0000FF });  // Front
+    const green_material = new THREE.MeshBasicMaterial({ color: 0x00FF00 }); // Right
+    const orange_material = new THREE.MeshBasicMaterial({ color: 0xFFA500 }); // Back
+    const white_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF }); // Up
+    const yellow_material = new THREE.MeshBasicMaterial({ color: 0xFFFF00 }); // Down
 
-    const cube1 = new THREE.Mesh(geometry, red_material);
-    const cube2 = new THREE.Mesh(geometry, green_material);
-    const cube3 = new THREE.Mesh(geometry, white_material);
-    const cube4 = new THREE.Mesh(geometry, yellow_material);
-    const cube5 = new THREE.Mesh(geometry, blue_material);
-    const cube6 = new THREE.Mesh(geometry, orange_material);
+    // Centers
+    createCube(green_material, starting_positions["Right Center"]);
+    createCube(red_material, starting_positions["Left Center"]);
+    createCube(white_material, starting_positions["Up Center"]);
+    createCube(yellow_material, starting_positions["Down Center"]);
+    createCube(blue_material, starting_positions["Front Center"]);
+    createCube(orange_material, starting_positions["Back Center"]);
 
-    cube1.position.copy(starting_positions["Left Center"]);
-    cube2.position.copy(starting_positions["Right Center"]);
-    cube3.position.copy(starting_positions["Up Center"]);
-    cube4.position.copy(starting_positions["Down Center"]);
-    cube5.position.copy(starting_positions["Front Center"]);
-    cube6.position.copy(starting_positions["Back Center"]);
+    // Edges
+    createCube(green_material, starting_positions["Right Up"]);
+    createCube(green_material, starting_positions["Right Front"]);
+    createCube(green_material, starting_positions["Right Down"]);
+    createCube(green_material, starting_positions["Right Back"]);
 
-    cubecollection = [
-        cube1,
-        cube2,
-        cube3,
-        cube4,
-        cube5,
-        cube6,
-    ]
-    scene.add(...cubecollection);
+    createCube(red_material, starting_positions["Left Up"]);
+    createCube(red_material, starting_positions["Left Front"]);
+    createCube(red_material, starting_positions["Left Down"]);
+    createCube(red_material, starting_positions["Left Back"]);
+
+    createCube(white_material, starting_positions["Up Front"]);
+    createCube(white_material, starting_positions["Up Back"]);
+    createCube(yellow_material, starting_positions["Down Front"]);
+    createCube(yellow_material, starting_positions["Down Back"]);
+
+    // Corners
+    createCube(green_material, starting_positions["Right Up Front"]);
+    createCube(green_material, starting_positions["Right Up Back"]);
+    createCube(green_material, starting_positions["Right Down Front"]);
+    createCube(green_material, starting_positions["Right Down Back"]);
+
+    createCube(red_material, starting_positions["Left Up Front"]);
+    createCube(red_material, starting_positions["Left Up Back"]);
+    createCube(red_material, starting_positions["Left Down Front"]);
+    createCube(red_material, starting_positions["Left Down Back"]);
+
 }
+
+
+function createCube(material, position) {
+
+    const cube = new THREE.Mesh(geometry, material);
+    cube.position.copy(position);
+
+    cubecollection.push(cube);
+
+    const edges = new THREE.EdgesGeometry(cube.geometry);
+    const edgeMaterial = new THREE.LineBasicMaterial({ color: 0x000000, linewidth: 10 });
+    const edgeLines = new THREE.LineSegments(edges, edgeMaterial);
+    scene.add(edgeLines);
+
+    scene.add(cube);
+
+}
+
 function rotate_section(intersects){
 
     if (intersects.length > 0) {
@@ -193,6 +251,28 @@ function rotate_around_point(object, point, angle, axis) {
     object.position.applyQuaternion(quaternion);
 
     object.position.add(point);
+
+    align_position_after_rotation(object.position)
+
+}
+
+function align_position_after_rotation(currentPosition){
+
+    let closestPosition = null;
+    let minDistance = Infinity;
+
+    for (const key in starting_positions ) {
+        const position = starting_positions[key];
+        const distance = currentPosition.distanceTo(position);
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestPosition = position;
+        }
+    }
+
+    if (closestPosition) {
+        currentPosition.copy(closestPosition);
+    }
 
 }
 
