@@ -88,40 +88,43 @@ export function setup_rubix_scene(){
     initialize_cubes()
     scene.addEventListener()
 
-    document.addEventListener('mousedown', onMouseDown); 
-    document.addEventListener('mouseup', onMouseUp);
+    document.getElementById("scene-container").addEventListener('mousedown', onMouseDown); 
+    document.getElementById("scene-container").addEventListener('mouseup', onMouseUp);
+    document.getElementById("scene-container").addEventListener("mousemove", onMouseMove);
 
-    document.getElementById("scene-container").addEventListener("mousemove", function(event) {
-
-        const rect = container.getBoundingClientRect();
-        mouse = calculate_scene_coords_from_client_coords({
-            x: event.clientX,
-            y: event.clientY
-        })
-        
-        // Update the raycaster
-        raycaster.setFromCamera(mouse, camera);
-        
-        if( isDragging && intersects.length === 0){
-
-            let angle_to_rotate_camera = (mouse.x-previous_mouseposition.x) * rotation_scalar;
-            rotate_around_point(camera,pivot.position,angle_to_rotate_camera,y_axis);
-            angle_to_rotate_camera = (mouse.y-previous_mouseposition.y) * rotation_scalar;
-            rotate_around_point(camera,pivot.position,angle_to_rotate_camera,x_axis);
-            camera.lookAt(pivot.position);
-        }
-        previous_mouseposition = mouse;
-    });
-        
     window.addEventListener('resize', resizeRenderer);
+
     resizeRenderer();
 
 
 }
+function onMouseMove(e) {
+    e.preventDefault();
+    const rect = container.getBoundingClientRect();
+    mouse = calculate_scene_coords_from_client_coords({
+        x: event.clientX,
+        y: event.clientY
+    })
+    
+    // Update the raycaster
+    raycaster.setFromCamera(mouse, camera);
+    
+    if( isDragging && intersects.length === 0){
+
+        let angle_to_rotate_camera = (mouse.x-previous_mouseposition.x) * rotation_scalar;
+        rotate_around_point(camera,pivot.position,angle_to_rotate_camera,y_axis);
+        angle_to_rotate_camera = (mouse.y-previous_mouseposition.y) * rotation_scalar;
+        rotate_around_point(camera,pivot.position,angle_to_rotate_camera,x_axis);
+        camera.lookAt(pivot.position);
+    }
+    previous_mouseposition = mouse;
+}
 function onMouseUp(e) {
+    e.preventDefault();
     isDragging = false;
 }
 function onMouseDown(e) {
+    e.preventDefault();
     isDragging = true;
     intersects = raycaster.intersectObjects(cubecollection);
     if(intersects.length > 0)
