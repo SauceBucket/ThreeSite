@@ -208,7 +208,7 @@ function rotate_all_cubes_sharing_x_val(x_val){
 
             rotate_around_point(cube,pivot.position,Math.PI/2,x_axis);
 
-            align_position_after_rotation(object.position);
+            align_position_after_rotation(cube.position);
 
             cube.updateMatrixWorld(true);
         }
@@ -224,7 +224,7 @@ function rotate_all_cubes_sharing_y_val(y_val){
 
             rotate_around_point(cube,pivot.position,Math.PI/2,y_axis);
 
-            align_position_after_rotation(object.position);
+            align_position_after_rotation(cube.position);
 
             cube.updateMatrixWorld(true);
         }
@@ -240,7 +240,7 @@ function rotate_all_cubes_sharing_z_val(z_val){
 
             rotate_around_point(cube,pivot.position,Math.PI/2,z_axis);
 
-            align_position_after_rotation(object.position);
+            align_position_after_rotation(cube.position);
 
             cube.updateMatrixWorld(true);
         }
