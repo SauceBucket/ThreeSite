@@ -10,15 +10,19 @@ const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
 const opaque_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF,wireframe:true});
 const pivot = new THREE.Mesh(geometry, opaque_material);
 const raycaster = new THREE.Raycaster();
-const mouse = new THREE.Vector2();
-let hoveredObject = null;
+let intersects = null;
+let mouse = new THREE.Vector2();
+let previous_mouseposition = new THREE.Vector2();
 const x_axis = new THREE.Vector3(1,0,0);
 const y_axis = new THREE.Vector3(0,1,0);
 const z_axis = new THREE.Vector3(0,0,1);
+let rotation_scalar = 2;
 let axis_selected = y_axis;
 let cubecollection = [];
+let isDragging = false;
 
-const starting_positions = {
+
+const starting_positions = { // TODO use a constant instead of a number
     // Face Centers
     "Right Center": new THREE.Vector3(1.1, 0, 0),
     "Up Center": new THREE.Vector3(0, 1.1, 0),
@@ -66,30 +70,56 @@ export function setup_rubix_scene(){
     scene.add(pivot);
     initialize_cubes()
     scene.addEventListener()
-    document.getElementById("scene-container").addEventListener("click", function(event) {
-        
 
-        const intersects = raycaster.intersectObjects(cubecollection);
-        rotate_section(intersects);
-
-    });
+    document.addEventListener('mousedown', onMouseDown); 
+    document.addEventListener('mouseup', onMouseUp);
 
     document.getElementById("scene-container").addEventListener("mousemove", function(event) {
 
         const rect = container.getBoundingClientRect();
-        mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-        mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+        mouse = calculate_scene_coords_from_client_coords({
+            x: event.clientX,
+            y: event.clientY
+        })
         
         // Update the raycaster
         raycaster.setFromCamera(mouse, camera);
         
-    });
+        if( isDragging && intersects.length === 0){
 
-    
+            let angle_to_rotate_camera = (mouse.x-previous_mouseposition.x) * rotation_scalar;
+            rotate_around_point(camera,pivot.position,angle_to_rotate_camera,y_axis);
+            angle_to_rotate_camera = (mouse.y-previous_mouseposition.y) * rotation_scalar;
+            rotate_around_point(camera,pivot.position,angle_to_rotate_camera,x_axis);
+            camera.lookAt(pivot.position);
+        }
+        previous_mouseposition = mouse;
+    });
+        
     window.addEventListener('resize', resizeRenderer);
     resizeRenderer();
 
 
+}
+function onMouseUp(e) {
+    isDragging = false;
+}
+function onMouseDown(e) {
+    isDragging = true;
+    intersects = raycaster.intersectObjects(cubecollection);
+    if(intersects.length > 0)
+        rotate_all_cubes_along_axis(axis_selected,intersects[0].object);
+}
+function calculate_scene_coords_from_client_coords(client_coords){
+
+    const rect = container.getBoundingClientRect();
+    let mouseposition = {
+        x:null,
+        y:null
+    }
+    mouseposition.x = ((client_coords.x - rect.left) / rect.width) * 2 - 1;
+    mouseposition.y = -((client_coords.y - rect.top) / rect.height) * 2 + 1;
+    return mouseposition;
 }
 
 function initialize_cubes() {
@@ -134,9 +164,7 @@ function initialize_cubes() {
     createCube(red_material, starting_positions["Left Up Back"]);
     createCube(red_material, starting_positions["Left Down Front"]);
     createCube(red_material, starting_positions["Left Down Back"]);
-
 }
-
 
 function createCube(material, position) {
 
@@ -151,14 +179,6 @@ function createCube(material, position) {
     scene.add(edgeLines);
 
     scene.add(cube);
-
-}
-
-function rotate_section(intersects){
-
-    if (intersects.length > 0) {
-        rotate_all_cubes_along_axis(axis_selected,intersects[0].object);     
-    }
 
 }
 
@@ -187,6 +207,9 @@ function rotate_all_cubes_sharing_x_val(x_val){
         if(cube.position.x == x_val){
 
             rotate_around_point(cube,pivot.position,Math.PI/2,x_axis);
+
+            align_position_after_rotation(object.position);
+
             cube.updateMatrixWorld(true);
         }
 
@@ -200,6 +223,9 @@ function rotate_all_cubes_sharing_y_val(y_val){
         if(cube.position.y == y_val){
 
             rotate_around_point(cube,pivot.position,Math.PI/2,y_axis);
+
+            align_position_after_rotation(object.position);
+
             cube.updateMatrixWorld(true);
         }
 
@@ -213,6 +239,9 @@ function rotate_all_cubes_sharing_z_val(z_val){
         if(cube.position.z == z_val){
 
             rotate_around_point(cube,pivot.position,Math.PI/2,z_axis);
+
+            align_position_after_rotation(object.position);
+
             cube.updateMatrixWorld(true);
         }
 
@@ -251,9 +280,6 @@ function rotate_around_point(object, point, angle, axis) {
     object.position.applyQuaternion(quaternion);
 
     object.position.add(point);
-
-    align_position_after_rotation(object.position)
-
 }
 
 function align_position_after_rotation(currentPosition){
