@@ -23,6 +23,7 @@ let isDragging = false;
 let cube_size = 1;
 let spacing_size = .05;
 let unit = cube_size + spacing_size;
+let num_scramble_steps = 100;
 
 const red_material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });   
 const blue_material = new THREE.MeshBasicMaterial({ color: 0x0000FF });  
@@ -89,8 +90,9 @@ export function setup_rubix_scene(){
     scene.addEventListener()
 
     document.getElementById("scene-container").addEventListener('mousedown', onMouseDown); 
-    document.getElementById("scene-container").addEventListener('mouseup', onMouseUp);
+    document.addEventListener('mouseup', onMouseUp);
     document.getElementById("scene-container").addEventListener("mousemove", onMouseMove);
+    document.getElementById("scene-container").addEventListener("wheel", onMouseWheel);
 
     window.addEventListener('resize', resizeRenderer);
 
@@ -119,6 +121,17 @@ function onMouseMove(e) {
     }
     previous_mouseposition = mouse;
 }
+
+export function SetupCamera(){
+
+    let angle_to_rotate_camera = Math.PI/5;
+
+    rotate_around_point(camera,pivot.position,angle_to_rotate_camera,y_axis);
+    rotate_around_point(camera,pivot.position,angle_to_rotate_camera * -1,x_axis);
+    
+    camera.lookAt(pivot.position);
+}
+
 function onMouseUp(e) {
     e.preventDefault();
     isDragging = false;
@@ -130,6 +143,14 @@ function onMouseDown(e) {
     if(intersects.length > 0)
         rotate_cubes(axis_selected,intersects[0].object.position)
 }
+function onMouseWheel(e) {
+    e.preventDefault();
+    isDragging = true;
+    intersects = raycaster.intersectObjects(cubecollection);
+    if(intersects.length > 0)
+        rotate_cubes(axis_selected,intersects[0].object.position)
+}
+
 function calculate_scene_coords_from_client_coords(client_coords){
 
     const rect = container.getBoundingClientRect();
@@ -262,4 +283,20 @@ export function SetRotationAxis(axis){
 
     }
 
+}
+
+export function scramble() {
+
+  const axes = [x_axis, y_axis, z_axis];
+  
+  let rand_num = 0;
+  
+  for (let i = 0; i < num_scramble_steps; i++) {
+    
+    rand_num = Math.floor(Math.random() * 3);
+    
+    // this works because the first three cubes of the collection are different layers: top, middle, bottom.
+    rotate_cubes(axes[rand_num],cubecollection[rand_num].position); 
+
+  }
 }
