@@ -1,14 +1,18 @@
 import * as THREE from 'https://cdn.jsdelivr.net/npm/three@latest/build/three.module.js';
 
 console.log('Three.js Loaded:', THREE);
+const cubesize = 1;
+let spacing_size = .1;
+let unit = cubesize + spacing_size;
+const pivotsize = (cubesize * 3 + spacing_size * 2 * 0.85);
 const container = document.getElementById('scene-container');
 const scene = new THREE.Scene();
 const camera = new THREE.PerspectiveCamera(75, container.clientWidth / container.clientHeight, 0.1, 1000);
 const renderer = new THREE.WebGLRenderer({ alpha: true });
-const geometry = new THREE.BoxGeometry();
-const material = new THREE.MeshBasicMaterial({ color: 0x00FF00 });
-const opaque_material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF,wireframe:true});
-const pivot = new THREE.Mesh(geometry, opaque_material);
+const geometry = new THREE.BoxGeometry(cubesize,cubesize,cubesize);
+const pivot_geometry = new THREE.BoxGeometry(pivotsize,pivotsize,pivotsize);
+const opaque_material = new THREE.MeshBasicMaterial({ color: 0x000000});
+const pivot = new THREE.Mesh(pivot_geometry, opaque_material);
 const raycaster = new THREE.Raycaster();
 let intersects = null;
 let mouse = new THREE.Vector2();
@@ -16,14 +20,13 @@ let previous_mouseposition = new THREE.Vector2();
 const x_axis = new THREE.Vector3(1,0,0);
 const y_axis = new THREE.Vector3(0,1,0);
 const z_axis = new THREE.Vector3(0,0,1);
-let rotation_scalar = 2;
+let rotation_scalar_x = 2.5;
+let rotation_scalar_y = 3;
 let axis_selected = y_axis;
 let cubecollection = [];
 let isDragging = false;
-let cube_size = 1;
-let spacing_size = .05;
-let unit = cube_size + spacing_size;
 let num_scramble_steps = 100;
+let isMouseOnPage = true;
 
 const red_material = new THREE.MeshBasicMaterial({ color: 0xFF0000 });   
 const blue_material = new THREE.MeshBasicMaterial({ color: 0x0000FF });  
@@ -93,7 +96,13 @@ export function setup_rubix_scene(){
     document.addEventListener('mouseup', onMouseUp);
     document.getElementById("scene-container").addEventListener("mousemove", onMouseMove);
     document.getElementById("scene-container").addEventListener("wheel", onMouseWheel);
+    window.addEventListener('mouseleave', () => {
+        isMouseOnPage = false;
+    });
 
+    window.addEventListener('mouseenter', () => {
+        isMouseOnPage = true;
+    });
     window.addEventListener('resize', resizeRenderer);
 
     resizeRenderer();
@@ -111,11 +120,11 @@ function onMouseMove(e) {
     // Update the raycaster
     raycaster.setFromCamera(mouse, camera);
     
-    if( isDragging && intersects.length === 0){
+    if( isDragging && intersects.length === 0 && isMouseOnPage){
 
-        let angle_to_rotate_camera = (mouse.x-previous_mouseposition.x) * rotation_scalar;
+        let angle_to_rotate_camera = (mouse.x-previous_mouseposition.x) * -1 * rotation_scalar_x;
         rotate_around_point(camera,pivot.position,angle_to_rotate_camera,y_axis);
-        angle_to_rotate_camera = (mouse.y-previous_mouseposition.y) * rotation_scalar;
+        angle_to_rotate_camera = (mouse.y-previous_mouseposition.y) * -1 * rotation_scalar_y;
         rotate_around_point(camera,pivot.position,angle_to_rotate_camera,x_axis);
         camera.lookAt(pivot.position);
     }
@@ -179,7 +188,6 @@ function initialize_cubes() {
     for (let key in starting_positions) {
         createCube(starting_positions[key]);
     }
-    
 }
 
 function createCube(position) {
