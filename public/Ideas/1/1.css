@@ -1,0 +1,114 @@
+body {
+  margin: 0;
+  height: 100vh; /* full viewport height */
+  background-color: #202020;
+  color: #eee;
+  font-family: monospace, monospace;
+  display: flex;
+  flex-direction: column;
+}
+
+.navbar {
+  background: #111;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.navbar h1 {
+  margin: 0;
+  font-size: 1rem;
+  flex-grow: 1;
+  font-weight: normal;
+}
+
+.navbar a {
+  color: #eee;
+  text-decoration: none;
+  font-weight: bold;
+}
+.navbar a:hover {
+  text-decoration: underline;
+}
+
+/* Make game container fill remaining height */
+#game-container {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 1rem;
+  box-sizing: border-box;
+  background: #222;
+  overflow: hidden; /* prevent scrolling */
+}
+
+#output {
+  flex-grow: 1;
+  padding: 1rem;
+  background: #111;
+  border-radius: 5px;
+  border: 1px solid #444;
+  white-space: pre-wrap;
+  margin-bottom: 0.5rem;
+  overflow-y: auto; /* allows vertical scroll */
+  user-select: text;
+  position: relative; /* So the overlay is relative to this */
+  color: #ccc;
+  font-family: monospace;
+}
+/* Minimalist dark scrollbar for Chrome, Edge, Safari */
+#output::-webkit-scrollbar {
+  width: 8px;
+}
+
+#output::-webkit-scrollbar-track {
+  background: #111;
+}
+
+#output::-webkit-scrollbar-thumb {
+  background-color: #444;
+  border-radius: 4px;
+  border: 2px solid #111;
+}
+
+#output::-webkit-scrollbar-thumb:hover {
+  background-color: #666;
+}
+
+/* For Firefox */
+#output {
+  scrollbar-width: thin;
+  scrollbar-color: #444 #111;
+}
+
+/* Input styling stays the same */
+#input {
+  font-family: monospace;
+  font-size: 1rem;
+  padding: 0.5rem;
+  border-radius: 5px;
+  border: none;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  background: #333;
+  color: #eee;
+}
+
+#input::placeholder {
+  color: #888;
+}
+
+#art-overlay {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  background-color: rgba(30, 30, 30, 0.8);
+  color: #ccc;
+  font-family: monospace;
+  font-size: 0.9rem;
+  white-space: pre;
+  border: 1px solid #333;
+  border-radius: 0.5rem;
+  display: none;
+}
